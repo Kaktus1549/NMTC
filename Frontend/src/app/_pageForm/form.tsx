@@ -1,48 +1,113 @@
+"use client";
+
+import React, { useState } from 'react';
 import Image from 'next/image';
+import Question from './question';
+
+function getData(){
+    let data = [] as QuestionData[];
+    let questionElements = document.getElementsByClassName("question");
+    for (let i = 0; i < questionElements.length; i++){
+        let questionElement = questionElements[i];
+        let question: QuestionData = {
+            question: "",
+            inWords: "",
+            answers: []
+        };
+        question.question = questionElement.getElementsByClassName("header")[0].getElementsByTagName("input")[0].value;
+        question.inWords = questionElement.getElementsByClassName("header")[0].getElementsByTagName("input")[1].value;
+        let answers = questionElement.getElementsByClassName("answer");
+        let answersData = [] as Answer[];
+        for (let j = 0; j < answers.length; j++){
+            let answerElement = answers[j];
+            let answer: Answer = {
+                successionRate: 0,
+                answer: "",
+                feedback: ""
+            };
+            answer.successionRate = Number(answerElement.getElementsByClassName("input-box short")[0].getElementsByTagName("input")[0].value);
+            answer.answer = answerElement.getElementsByClassName("input-box short")[1].getElementsByTagName("input")[0].value;
+            answer.feedback = answerElement.getElementsByClassName("input-box long")[0].getElementsByTagName("input")[0].value;
+            answersData.push(answer);
+        }
+        question.answers = answersData;
+        data.push(question);
+    }
+    return data;
+}
+function generateXML(data: QuestionData[]){
+    let xml = `<?xml version="1.0"?>\n<quiz>\n`;
+    data.forEach((question) => {
+        let questionXML = `
+    <question type="multichoice">
+        <name>
+            <text>${question.question}</text>
+        </name>
+        <questiontext format="html">
+            <text>${question.inWords}</text>
+        </questiontext>${question.answers.map((answer) => {
+            return `
+        <answer fraction="${answer.successionRate}">
+            <text>${answer.answer}</text>
+            <feedback>
+                <text>${answer.feedback}</text>
+            </feedback>
+        </answer>`;
+        }).join('')}
+        <shuffleanswers>1</shuffleanswers>
+        <single>true</single>
+        <answernumbering>abc</answernumbering>
+    </question>
+`;
+        xml += questionXML;
+    });
+    xml += `</quiz>`;
+    return xml;
+}
 
 export default function Form() {
-    return(
-    <div className="form">
-        <div className="question">
-            <div className="header">
-                <input type="text" placeholder="Question #1" />
-                <input type="text" placeholder="Question in words" className="in-words"/>
-            </div>
-            <div className="body">
-                <div className="help">
-                    <p className="short">Succesion rate in %</p>
-                    <p className="short">Answer</p>
-                    <p className="long">Feedback</p>
-                </div>
-                <div className="answer">
-                    <div className="input-box short">
-                        <input type="number" placeholder="0-100" />
-                    </div>
-                    <div className="input-box short">
-                        <input type="text" placeholder="Answer"/>
-                    </div>
-                    <div className="input-box long">
-                        <input type="text" placeholder="Feedback"/>
-                    </div>
-                </div>
-            </div>
-            <div className="footer">
-                <button>
+    const [questions, setQuestions] = useState<JSX.Element[]>([]);
+
+    if (questions.length === 0) {
+        const newQuestion = (
+            <Question id={1} key={1} />
+        );
+
+        setQuestions((prevQuestions) => [...prevQuestions, newQuestion]);
+    }
+
+    function addQuestion() {
+        const newQuestion = (
+            <Question id={questions.length + 1} key={questions.length + 1} />
+        );
+
+        setQuestions((prevQuestions) => [...prevQuestions, newQuestion]);
+    }
+
+    function exportData(){
+        let data = getData();
+        let xml = generateXML(data);
+        const blob = new Blob([xml], {type: "application/xml"});
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.download = "quiz.xml";
+        link.href = url;
+        link.click();
+    }
+
+    return (
+        <div className="form">
+            {questions}
+            <footer>
+                <button onClick={addQuestion}>
                     <Image src="/icons/plus.svg" alt="Add question" width={20} height={20} />
-                    <p>Add answer</p>
+                    <p>Add question</p>
                 </button>
-            </div>
+                <button onClick={exportData}>
+                    <Image src="/icons/plus.svg" alt="Export" width={20} height={20} />
+                    <p>Export</p>
+                </button>
+            </footer>
         </div>
-        <footer>
-            <button>
-                <Image src="/icons/plus.svg" alt="Add question" width={20} height={20} />
-                <p>Add question</p>
-            </button>
-            <button>
-                <Image src="/icons/plus.svg" alt="Export" width={20} height={20} />
-                <p>Add answer</p>
-            </button>
-        </footer>   
-    </div>
     );
 }
