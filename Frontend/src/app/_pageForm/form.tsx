@@ -7,6 +7,7 @@ import Question from './question';
 function getData(){
     let data = [] as QuestionData[];
     let questionElements = document.getElementsByClassName("question");
+    // Circle through all questions divs
     for (let i = 0; i < questionElements.length; i++){
         let questionElement = questionElements[i];
         let question: QuestionData = {
@@ -14,6 +15,7 @@ function getData(){
             inWords: "",
             answers: []
         };
+        // Get question data
         question.question = questionElement.getElementsByClassName("header")[0].getElementsByTagName("input")[0].value;
         question.inWords = questionElement.getElementsByClassName("header")[0].getElementsByTagName("input")[1].value;
         let answers = questionElement.getElementsByClassName("answer");
@@ -32,6 +34,7 @@ function getData(){
         }
         question.answers = answersData;
         data.push(question);
+        // In future it will be good to do this by reference
     }
     return data;
 }
@@ -68,20 +71,16 @@ function generateXML(data: QuestionData[]){
 export default function Form() {
     const [questions, setQuestions] = useState<JSX.Element[]>([]);
 
-    if (questions.length === 0) {
-        const newQuestion = (
-            <Question id={1} key={1} />
-        );
-
-        setQuestions((prevQuestions) => [...prevQuestions, newQuestion]);
-    }
-
     function addQuestion() {
         const newQuestion = (
             <Question id={questions.length + 1} key={questions.length + 1} />
         );
 
         setQuestions((prevQuestions) => [...prevQuestions, newQuestion]);
+    }
+
+    if (questions.length === 0) {
+        addQuestion();
     }
 
     function exportData(){

@@ -4,29 +4,13 @@ import React, { useState, forwardRef, useRef, useEffect } from 'react';
 import Image from 'next/image';
 
 export default function Question({ id }: { id: number }) {
-    const [answers, setAnswer] = useState<JSX.Element[]>([]);
-    // By default there will be one answer
+    // List of answers
+    const [answersList, setAnswer] = useState<JSX.Element[]>([]);
 
-    if (answers.length === 0) {
-        const newAnswer = (
-            <div className="answer" key={answers.length + 1}>
-                <div className="input-box short">
-                    <input type="number" placeholder="0-100" />
-                </div>
-                <div className="input-box short">
-                    <input type="text" placeholder="Answer"/>
-                </div>
-                <div className="input-box long">
-                    <input type="text" placeholder="Feedback"/>
-                </div>
-            </div>
-        );
-        setAnswer((prevAnswers) => [...prevAnswers, newAnswer]);
-    }
-
+    // Add a new answer
     function addAnswer() {
         const newAnswer = (
-            <div className="answer" key={answers.length + 1}>
+            <div className="answer" key={answersList.length + 1}>
                 <div className="input-box short">
                         <input type="number" placeholder="0-100" />
                 </div>
@@ -41,8 +25,24 @@ export default function Question({ id }: { id: number }) {
 
         setAnswer((prevAnswers) => [...prevAnswers, newAnswer]);
     }
+
+    // By default there will be one answer
+    if (answersList.length === 0) {
+        addAnswer();
+    }
+
+    function deleteSelf() {
+        // Delete the question
+        if (id === 1) {
+            return;
+        }
+        const question = document.getElementById(`question-${id}`);
+        question?.remove();
+    }
+
+    // Render the question
     return(
-        <div className="question">
+        <div className="question" id={`question-${id}`}>
             <div className="header">
                 <input type="text" placeholder={`Question #${id}`}/>
                 <input type="text" placeholder="Question in words" className="in-words"/>
@@ -53,7 +53,7 @@ export default function Question({ id }: { id: number }) {
                     <p className="short">Answer</p>
                     <p className="long">Feedback</p>
                 </div>
-                {answers}
+                {answersList}
             </div>
             <div className="footer">
                 <button onClick={addAnswer}>
@@ -61,6 +61,10 @@ export default function Question({ id }: { id: number }) {
                     <p>Add answer</p>
                 </button>
             </div>
+            {id !== 1 ?
+                <button className='delete' onClick={deleteSelf}></button>
+            : null
+            }
         </div>
     );
 }
