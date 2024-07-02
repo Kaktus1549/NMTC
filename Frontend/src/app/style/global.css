@@ -171,7 +171,7 @@ main{
     height: 40px;
     margin-bottom: 20px;
 }
-.delete{
+.question-delete{
     background-color: #FF2121;
     border-radius: 100%;
     height: 35px;
@@ -183,6 +183,18 @@ main{
     cursor: pointer;
     visibility: hidden;
 }
-.question:hover .delete{
+.question:hover .question-delete{
+    visibility: visible;
+}
+.answer-delete{
+    background-color: #FF2121;
+    border-radius: 100%;
+    height: 30px;
+    width: 30px;
+    border: none;
+    cursor: pointer;
+    visibility: hidden;
+}
+.answer:hover .answer-delete{
     visibility: visible;
 }

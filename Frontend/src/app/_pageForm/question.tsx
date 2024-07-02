@@ -7,12 +7,17 @@ export default function Question({ id }: { id: number }) {
     // List of answers
     const [answersList, setAnswer] = useState<JSX.Element[]>([]);
 
+    function deleteAnswer(id: number) {
+        const answer = document.getElementById(`answer-${id}`);
+        answer?.remove();
+    }
+
     // Add a new answer
     function addAnswer() {
         const newAnswer = (
-            <div className="answer" key={answersList.length + 1}>
+            <div className="answer" key={answersList.length + 1} id={`answer-${answersList.length + 1}`}>
                 <div className="input-box short">
-                        <input type="number" placeholder="0-100" />
+                        <input type="number" placeholder="0-100" max="100" min="0"/>
                 </div>
                 <div className="input-box short">
                     <input type="text" placeholder="Answer"/>
@@ -20,6 +25,9 @@ export default function Question({ id }: { id: number }) {
                 <div className="input-box long">
                     <input type="text" placeholder="Feedback"/>
                 </div>
+                { answersList.length > 0 ?
+                    <button className="answer-delete" onClick={() => deleteAnswer(answersList.length + 1)}></button>
+                : null}
             </div>
         );
 
@@ -62,7 +70,7 @@ export default function Question({ id }: { id: number }) {
                 </button>
             </div>
             {id !== 1 ?
-                <button className='delete' onClick={deleteSelf}></button>
+                <button className='question-delete' onClick={deleteSelf}></button>
             : null
             }
         </div>
