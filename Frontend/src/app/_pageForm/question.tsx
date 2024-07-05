@@ -26,7 +26,9 @@ export default function Question({ id }: { id: number }) {
                     <input type="text" placeholder="Feedback"/>
                 </div>
                 { answersList.length > 0 ?
-                    <button className="answer-delete" onClick={() => deleteAnswer(answersList.length + 1)}></button>
+                    <button className="answer-delete" onClick={() => deleteAnswer(answersList.length + 1)}>
+                        <Image src="/icons/delete.png" alt="Delete answer" width={17} height={17} />
+                    </button>
                 : null}
             </div>
         );
@@ -70,7 +72,9 @@ export default function Question({ id }: { id: number }) {
                 </button>
             </div>
             {id !== 1 ?
-                <button className='question-delete' onClick={deleteSelf}></button>
+                <button className='question-delete' onClick={deleteSelf}>
+                    <Image src="/icons/delete.png" alt="Delete question" width={20} height={20} />
+                </button>
             : null
             }
         </div>

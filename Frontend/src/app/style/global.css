@@ -181,10 +181,16 @@ main{
     top: -10px;
     right: -5px;
     cursor: pointer;
-    visibility: hidden;
+    opacity: 0;
+    align-content: center;
+}
+.question-delete img{
+    margin: 0;
+    padding: 0;
 }
 .question:hover .question-delete{
-    visibility: visible;
+    animation: appear 0.2s ease-in-out;
+    animation-fill-mode: forwards;
 }
 .answer-delete{
     background-color: #FF2121;
@@ -193,8 +199,23 @@ main{
     width: 30px;
     border: none;
     cursor: pointer;
-    visibility: hidden;
+    opacity: 0;
+    align-content: center;
+}
+.answer-delete img{
+    margin: 0;
+    padding: 0;
 }
 .answer:hover .answer-delete{
-    visibility: visible;
+    animation: appear ease-in-out;
+    animation-fill-mode: forwards;
+}
+
+@keyframes appear {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
 }
