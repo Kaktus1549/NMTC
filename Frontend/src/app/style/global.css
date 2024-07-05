@@ -28,7 +28,8 @@ main{
     width: 100%;
 }
 .form{
-    width: 75%;
+    width: 1080px;
+    max-width: 95vw;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -39,17 +40,16 @@ main{
     min-height: 100vh;
 }
 .logo{
-    width: 25%;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: flex-end;
+    align-items: center;
     height: 80vh;
     padding-right: 20px;
     padding-top: 40px;
 }
 .logo img{
-    width: 55%;
+    width: 200px;
 }
 .question{
     display: flex;
@@ -99,6 +99,7 @@ main{
     justify-content: space-between;
     align-items: center;
     width: 100%;
+    gap: 5px;
 }
 .answer input{
     border: 2px solid #000;
@@ -217,5 +218,44 @@ main{
     }
     100% {
         opacity: 1;
+    }
+}
+@media screen and (max-width: 1000px){
+    .logo{
+        display: none;
+    }
+}
+@media screen and (max-width: 800px) {
+    .question{
+        width: 90%;
+    }
+    .header input{
+        width: 40%;
+    }
+    .header .in-words{
+        width: 90%;
+    }
+    .question .body{
+        gap: 5px;
+    }
+    .answer input{
+        width: 90%;
+    }
+}
+@media screen and (max-width:750px) {
+    .help p{
+        font-size: 0.8rem;
+    }
+}
+@media screen and (max-width: 550px) {
+    main{
+        justify-content: center;
+    }
+    .form{
+        max-width: 99vw;
+        border-radius: 20px 20px 0px 0px;
+    }
+    .form footer{
+        width: 90%;
     }
 }
