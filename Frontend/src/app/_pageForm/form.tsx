@@ -28,6 +28,12 @@ function getData(){
                 feedback: ""
             };
             answer.successionRate = Number(answerElement.getElementsByClassName("input-box short")[0].getElementsByTagName("input")[0].value);
+            if (answer.successionRate < 0){
+                answer.successionRate = 0;
+            }
+            if (answer.successionRate > 100){
+                answer.successionRate = 100;
+            }
             answer.answer = answerElement.getElementsByClassName("input-box short")[1].getElementsByTagName("input")[0].value;
             answer.feedback = answerElement.getElementsByClassName("input-box long")[0].getElementsByTagName("input")[0].value;
             answersData.push(answer);
