@@ -67,7 +67,7 @@ export default function Question({ id }: { id: number }) {
                 <input type="text" placeholder={`Question #${id}`}/>
                 <input type="text" placeholder="Question in words" className="in-words"/>
                 {image.preview === "" ?
-                        <input type='file' className="image-upload" onChange={handleChange} id="image-upload">   
+                        <input type='file' className="image-upload" onChange={handleChange} id="image-upload" accept='image/*'>  
                         </input>
                 :
                         <div className='uploaded-cont'>

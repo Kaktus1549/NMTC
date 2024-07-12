@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import { encode } from 'html-entities';
+import { lookup } from 'mime-types';
 import Question from './question';
 
 async function getData(){
@@ -45,7 +47,17 @@ async function getData(){
             let blobUrl = image.getAttribute("src");
             let image_name = image.getAttribute("alt");
             if (blobUrl !== null && image_name !== null) {
-                await fetch(blobUrl).then(response => response.arrayBuffer())
+                await fetch(blobUrl).then(response => {
+                    const contentType = response.headers.get('Content-Type');
+                    if(contentType?.startsWith('image/')) {
+                        return response.arrayBuffer();
+                    }
+                    else{
+                        console.error("Blob url does not point to an image");
+                        alert("It seems that image "+ image_name + " is not an image. Please remove it and try again.")
+                        return null;
+                    }
+                })
                 .then(binaryData => {
                     if (binaryData !== null){
                         const uint8Array = new Uint8Array(binaryData);
@@ -53,6 +65,8 @@ async function getData(){
                         question.image_data = base64;
                         question.image_name = image_name;
                     }
+                    question.image_data = "";
+                    question.image_name = "";
                  });
             }
         }
@@ -67,23 +81,23 @@ function generateXML(data: QuestionData[]){
     data.forEach((question) => {
         let questionXML = `    <question type="multichoice">
         <name>
-            <text>${question.question}</text>
+            <text>${encode(question.question, {level: 'xml'})}</text>
         </name>
         <questiontext format="html">
-            <text>${question.inWords}</text>
+            <text>${encode(question.inWords, {level: 'xml'})}</text>
         </questiontext>${question.answers.map((answer) => {
             return `
-        <answer fraction="${answer.successionRate}">
-            <text>${answer.answer}</text>
+        <answer fraction="${encode(String(answer.successionRate))}">
+            <text>${encode(answer.answer, {level: 'xml'})}</text>
             <feedback>
-                <text>${answer.feedback}</text>
+                <text>${encode(answer.feedback, {level: 'xml'})}</text>
             </feedback>
         </answer>`;
         }).join('')}
         <shuffleanswers>1</shuffleanswers>
         <single>true</single>
         <answernumbering>abc</answernumbering>
-        ${question.image_data !== "" ? `<image>${question.image_name}</image>
+        ${question.image_data !== "" ? `<image>${encode(question.image_name, {level: 'xml'})}</image>
         <image_base64>${question.image_data}</image_base64>` : ""}
     </question>
 `;
