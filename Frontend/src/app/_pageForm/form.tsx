@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import Question from './question';
 
-function getData(){
+async function getData(){
     let data = [] as QuestionData[];
     let questionElements = document.getElementsByClassName("question");
     // Circle through all questions divs
@@ -13,6 +13,8 @@ function getData(){
         let question: QuestionData = {
             question: "",
             inWords: "",
+            image_name: "",
+            image_data: "",
             answers: []
         };
         // Get question data
@@ -38,6 +40,22 @@ function getData(){
             answer.feedback = answerElement.getElementsByClassName("input-box long")[0].getElementsByTagName("input")[0].value;
             answersData.push(answer);
         }
+        let image = questionElement.getElementsByClassName("uploaded")[0];
+        if (image !== undefined){
+            let blobUrl = image.getAttribute("src");
+            let image_name = image.getAttribute("alt");
+            if (blobUrl !== null && image_name !== null) {
+                await fetch(blobUrl).then(response => response.arrayBuffer())
+                .then(binaryData => {
+                    if (binaryData !== null){
+                        const uint8Array = new Uint8Array(binaryData);
+                        const base64 = btoa(String.fromCharCode(...uint8Array));
+                        question.image_data = base64;
+                        question.image_name = image_name;
+                    }
+                 });
+            }
+        }
         question.answers = answersData;
         data.push(question);
         // In future it will be good to do this by reference
@@ -47,8 +65,7 @@ function getData(){
 function generateXML(data: QuestionData[]){
     let xml = `<?xml version="1.0"?>\n<quiz>\n`;
     data.forEach((question) => {
-        let questionXML = `
-    <question type="multichoice">
+        let questionXML = `    <question type="multichoice">
         <name>
             <text>${question.question}</text>
         </name>
@@ -66,6 +83,8 @@ function generateXML(data: QuestionData[]){
         <shuffleanswers>1</shuffleanswers>
         <single>true</single>
         <answernumbering>abc</answernumbering>
+        ${question.image_data !== "" ? `<image>${question.image_name}</image>
+        <image_base64>${question.image_data}</image_base64>` : ""}
     </question>
 `;
         xml += questionXML;
@@ -89,8 +108,8 @@ export default function Form() {
         addQuestion();
     }
 
-    function exportData(){
-        let data = getData();
+    async function exportData(){
+        let data = await getData();
         let xml = generateXML(data);
         const blob = new Blob([xml], {type: "application/xml"});
         const url = URL.createObjectURL(blob);
