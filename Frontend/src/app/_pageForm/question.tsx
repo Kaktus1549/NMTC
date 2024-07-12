@@ -72,6 +72,9 @@ export default function Question({ id }: { id: number }) {
                 :
                         <div className='uploaded-cont'>
                             <Image src={image.preview} alt={image.name} width={1024} height={1024} className="uploaded"/>
+                            <button onClick={() => setImage({ preview: "", name: ""})} className='remove-image'>
+                                <Image src="/icons/delete.png" alt="Delete image" width={20} height={20} />
+                            </button>
                         </div>
                 }
             </div>
