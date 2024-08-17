@@ -27,6 +27,13 @@ main{
     justify-content: flex-start;
     width: 100%;
 }
+button{
+    cursor: pointer;
+    transition: ease-in-out 0.2s;
+}
+button:hover{
+    transform: scale(1.1);
+}
 .form{
     width: 1080px;
     max-width: 95vw;
@@ -93,6 +100,10 @@ main{
     height: 150px !important;
     width: 100% !important;
     border: none !important;
+    transition: ease-in-out 0.2s;
+}
+.image-upload:hover{
+    transform: scale(1.015);
 }
 .uploaded-cont{
     display: flex;

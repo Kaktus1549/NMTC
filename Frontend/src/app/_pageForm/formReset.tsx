@@ -70,9 +70,11 @@ export default function FormReset({data, open, onClose }: {data: QuestionData[],
             color: '#ffffff',
             borderRadius: '20px',
             width: '100px',
+            transition: 'ease-in-out 0.2s',
             '&:hover': {
               backgroundColor: '#b02b2b',
               color: '#ffcccb',
+              transform: 'scale(1.1)',
             },
           }}>Cancel</Button>
           <Button onClick={Reset} sx={{
@@ -80,9 +82,11 @@ export default function FormReset({data, open, onClose }: {data: QuestionData[],
             color: '#ffffff',
             borderRadius: '20px',
             width: '100px',
+            transition: 'ease-in-out 0.2s',
             '&:hover': {
-              backgroundColor: '#8b9d48', // Darker green on hover
-              color: '#d3e6b0',           // Light green text on hover
+              backgroundColor: '#8b9d48', 
+              color: '#d3e6b0',  
+              transform: 'scale(1.1)',
             },
           }}>Continue</Button>
         </DialogActions>
