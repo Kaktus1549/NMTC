@@ -84,7 +84,7 @@ function getDataFromLocalStorage(): QuestionData[] {
     let data: QuestionData[] = [];
 
     if (formKeys.length === 0) {
-        let question =  { id: 1, question: "", inWords: "", image_name: "", image_blob: "",answers: [{ successionRate: undefined, answer: "", feedback: "" },{ successionRate: undefined, answer: "", feedback: "" }]} as QuestionData;
+        let question =  { id: 1, question: "", inWords: "", image_name: "", image_blob: "",answers: [{ successionRate: "", answer: "", feedback: "" },{ successionRate: "", answer: "", feedback: "" }]} as QuestionData;
         data.push(question);
         return data;
     }
@@ -120,7 +120,7 @@ function getDataFromLocalStorage(): QuestionData[] {
             let answerId = parseInt(keyParts[3]);
             let answer = question.answers.find(a => a.id === answerId);
             if (!answer) {
-                answer = {id: answerId, successionRate: undefined, answer: "", feedback: "" };
+                answer = {id: answerId, successionRate: "", answer: "", feedback: "" };
                 question.answers.push(answer);
             }
             switch (keyParts[4]) {
@@ -139,14 +139,14 @@ function getDataFromLocalStorage(): QuestionData[] {
 
     data.forEach(question => {
         if (question.answers.length === 0) {
-            question.answers = [{id: 0, successionRate: undefined, answer: "", feedback: "" },{ id: 1, successionRate: undefined, answer: "", feedback: "" }];
+            question.answers = [{id: 0, successionRate: "", answer: "", feedback: "" },{ id: 1, successionRate: "", answer: "", feedback: "" }];
         }
         else if (question.answers.length === 1) {
             if (question.answers[0].id === 0) {
-                question.answers.push({id:1, successionRate: undefined, answer: "", feedback: "" });
+                question.answers.push({id:1, successionRate: "", answer: "", feedback: "" });
             }
             else {
-                question.answers.unshift({id:0, successionRate: undefined, answer: "", feedback: "" });
+                question.answers.unshift({id:0, successionRate: "", answer: "", feedback: "" });
             }
         }
     });
@@ -183,7 +183,7 @@ export default function Form() {
             inWords: "",
             image_name: "",
             image_blob: "",
-            answers: [{id: 0, successionRate: undefined, answer: "", feedback: "" },{ id: 1, successionRate: undefined, answer: "", feedback: "" }],
+            answers: [{id: 0, successionRate: "", answer: "", feedback: "" },{ id: 1, successionRate: "", answer: "", feedback: "" }],
         };
         setQuestions((prevQuestions) => [...prevQuestions, newQuestion]);
     };

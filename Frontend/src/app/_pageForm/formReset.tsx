@@ -28,7 +28,7 @@ export default function FormReset({data, open, onClose }: {data: QuestionData[],
     data.splice(1);
     // Removes answers if there are more then 2
     let firstQuestion = data[0]
-    let answers = [{id: 0, successionRate: 0, answer: "", feedback: "" },{ id: 1, successionRate: 0, answer: "", feedback: "" }]
+    let answers = [{id: 0, successionRate: "", answer: "", feedback: "" },{ id: 1, successionRate: "", answer: "", feedback: "" }]
     firstQuestion.question = "";
     firstQuestion.inWords = "";
     firstQuestion.image_name = "";
