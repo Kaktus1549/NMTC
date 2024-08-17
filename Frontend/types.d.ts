@@ -1,6 +1,6 @@
 interface Answer{
     id: number;
-    successionRate: number;
+    successionRate: number | undefined;
     answer: string;
     feedback: string;
 }

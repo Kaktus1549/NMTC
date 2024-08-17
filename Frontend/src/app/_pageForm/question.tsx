@@ -36,7 +36,7 @@ export default function Question({ data, onDelete, onUpdate }  : { data: Questio
 
     const addAnswer = () => {
         let answerId = questionData.answers.length;
-        const newAnswer = {id: answerId, successionRate: 0, answer: "", feedback: "" };
+        const newAnswer = {id: answerId, successionRate: undefined, answer: "", feedback: "" };
         const updatedAnswers = [...questionData.answers, newAnswer];
         const updatedQuestion = { ...questionData, answers: updatedAnswers };
         setQuestionData(updatedQuestion);
