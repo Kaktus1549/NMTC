@@ -150,7 +150,55 @@ function getDataFromLocalStorage(): QuestionData[] {
             }
         }
     });
-    return data;
+    let sortedData = data.sort((a, b) => a.id - b.id);
+    for (let i = 0; i < sortedData.length; i++) {
+        if (sortedData[i].id !== i + 1) {
+            // If the id is not the expected one, we need to update it even in the localStorage
+            let previousId = sortedData[i].id;
+            sortedData[i].id = i + 1;
+            sortedData[i].answers.forEach((answer, index) => {
+                answer.id = index;
+            });
+            sortedData[i].answers.sort((a, b) => a.id - b.id);
+            let question = sortedData[i];
+            let keys = Object.keys(localStorage);
+            let questionKeys = keys.filter(key => key.startsWith("question-" + previousId + "-"));
+            questionKeys.forEach(key => {
+                localStorage.removeItem(key);
+            });
+            if (question.question !== "") {
+                localStorage.setItem("question-" + question.id + "-question", question.question);
+            }
+            if (question.inWords !== "") {
+                localStorage.setItem("question-" + question.id + "-inWords", question.inWords);
+            }
+            if (question.image_name !== "") {
+                localStorage.setItem("question-" + question.id + "-imageName", question.image_name);
+            }
+            if (question.image_blob !== "") {
+                localStorage.setItem("question-" + question.id + "-imageData", question.image_blob);
+            }
+            question.answers.forEach(answer => {
+                if (answer.successionRate !== "") {
+                    localStorage.setItem("question-" + question.id + "-answer-" + answer.id + "-successionRate", String(answer.successionRate));
+                }
+                if (answer.answer !== "") {
+                    localStorage.setItem("question-" + question.id + "-answer-" + answer.id + "-answer", answer.answer);
+                }
+                if (answer.feedback !== "") {
+                    localStorage.setItem("question-" + question.id + "-answer-" + answer.id + "-feedback", answer.feedback);
+                }
+            });
+        }
+    }
+    return sortedData;
+}
+function deleteFromLocalStorage(id: number) {
+    let keys = Object.keys(localStorage);
+    let formKeys = keys.filter(key => key.startsWith("question-" + id));
+    formKeys.forEach(key => {
+        localStorage.removeItem(key);
+    });
 }
 export default function Form() {
     const [questions, setQuestions] = useState<QuestionData[]>([]);
@@ -190,6 +238,7 @@ export default function Form() {
 
     const deleteQuestion = (id: number) => {
         setQuestions((prevQuestions) => prevQuestions.filter((q) => q.id !== id));
+        deleteFromLocalStorage(id);
     };
 
     const updateQuestion = (id: number, updatedQuestion: QuestionData) => {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 
-export default function Question({ data, onDelete, onUpdate }  : { data: QuestionData, onDelete: () => void, onUpdate: (question: QuestionData) => void }) {
+export default function Question({ data, onDelete, onUpdate }: { data: QuestionData, onDelete: (id: number) => void, onUpdate: (question: QuestionData) => void }) {
     const [questionData, setQuestionData] = useState(data);
 
     const handleInputChange = (field : string, value : string) => {
@@ -177,7 +177,7 @@ export default function Question({ data, onDelete, onUpdate }  : { data: Questio
                 </button>
             </div>
             {data.id !== 1 && (
-                <button className="question-delete" onClick={onDelete}>
+                <button className="question-delete" onClick={() => onDelete(data.id)}>
                     <Image src="/icons/delete.png" alt="Delete question" width={20} height={20} />
                 </button>
             )}
