@@ -96,14 +96,12 @@ export default function Question({ data, onDelete, onUpdate }: { data: QuestionD
     return (
         <div className="question">
             <div className="header">
-                <input
-                    type="text"
+                <textarea
                     value={questionData.question}
                     onChange={(e) => handleInputChange('question', e.target.value)}
                     placeholder={`Question #${data.id}`}
                 />
-                <input
-                    type="text"
+                <textarea
                     value={questionData.inWords}
                     onChange={(e) => handleInputChange('inWords', e.target.value)}
                     placeholder="Question in words"
@@ -147,16 +145,14 @@ export default function Question({ data, onDelete, onUpdate }: { data: QuestionD
                             />
                         </div>
                         <div className="input-box short">
-                            <input
-                                type="text"
+                            <textarea
                                 value={answer.answer}
                                 onChange={(e) => handleAnswerChange(index, 'answer', e.target.value)}
                                 placeholder="Answer"
                             />
                         </div>
                         <div className="input-box long">
-                            <input
-                                type="text"
+                            <textarea
                                 value={answer.feedback}
                                 onChange={(e) => handleAnswerChange(index, 'feedback', e.target.value)}
                                 placeholder="Feedback"

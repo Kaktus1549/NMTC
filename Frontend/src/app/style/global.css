@@ -137,7 +137,7 @@ button:hover{
     animation: appear 0.2s ease-in-out;
     animation-fill-mode: forwards;
 }
-.header input{
+.header input, .header textarea{
     border: 1.5px solid #000;
     background: #FFF;
     width: 30%;
@@ -165,12 +165,13 @@ button:hover{
     width: 100%;
     gap: 5px;
 }
-.answer input{
+.answer textarea, .answer input{
     border: 2px solid #000;
     background: #FFF;
     width: 80%;
     height: 20px;
 }
+
 .input-box{
     display: flex;
     flex-direction: column;
