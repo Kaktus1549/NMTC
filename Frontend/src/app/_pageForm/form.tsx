@@ -204,6 +204,7 @@ export default function Form() {
     const [questions, setQuestions] = useState<QuestionData[]>([]);
     const [open, setOpen] = useState(false);
     const [loadingText, setLoadingText] = useState("Loading");
+    const [download, setDownload] = useState(false);
 
     useEffect(() => {
         if (typeof localStorage !== "undefined") {
@@ -252,9 +253,12 @@ export default function Form() {
             const blob = new Blob([xml], { type: "application/xml" });
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
-            link.download = "quiz.xml";
             link.href = url;
+            link.download = "quiz.xml";
+            document.body.appendChild(link);
             link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         });
     };
 
