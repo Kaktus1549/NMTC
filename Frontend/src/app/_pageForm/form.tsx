@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Question from './question';
 import FormReset from './formReset';
+import FormDownload from './downloadFile';
 import { encode } from 'html-entities';
 
 async function encodeImageToBase64(imageBlob: string): Promise<string | null> {
@@ -248,13 +249,13 @@ export default function Form() {
         );
     };
 
-    const exportData = async () => {
+    const exportData = async (fileName: string) => {
         await generateXML(questions).then(xml => {
             const blob = new Blob([xml], { type: "application/xml" });
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
             link.href = url;
-            link.download = "quiz.xml";
+            link.download = fileName + ".xml";
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -285,7 +286,7 @@ export default function Form() {
                     <Image src="/icons/plus.svg" alt="Add question" width={20} height={20} />
                     <p>Add question</p>
                 </button>
-                <button onClick={exportData}>
+                <button onClick={() => setDownload(true)}>
                     <Image src="/icons/plus.svg" alt="Export" width={20} height={20} />
                     <p>Export</p>
                 </button>
@@ -294,6 +295,7 @@ export default function Form() {
                 </button>
             </footer>
             <FormReset data={questions} open={open} onClose={() => setOpen(false)} />
+            <FormDownload exportData={exportData} open={download} onClose={() => setDownload(false)} />
         </div>
     );
 }

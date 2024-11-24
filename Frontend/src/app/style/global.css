@@ -297,6 +297,22 @@ button:hover{
     margin-bottom: 10%;
 }
 
+.formDownload{
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.formDownload input{
+    border: 1.5px solid #000;
+    background: #FFF;
+    width: 80%;
+    height: 30px;
+    font-size: 1.2rem;
+}
+
 @keyframes spin-anim {
     0% {
         transform: rotate(0deg);
