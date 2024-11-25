@@ -202,7 +202,6 @@ function deleteFromLocalStorage(id: number) {
         localStorage.removeItem(key);
     });
 }
-
 function getDataFromXML(xml: string): QuestionData[] {
     var XMLParser = require('react-xml-parser');
     const xmlData = new XMLParser().parseFromString(xml);
@@ -211,8 +210,8 @@ function getDataFromXML(xml: string): QuestionData[] {
     let childrens = xmlData.children;
     childrens.forEach((children: any, index: number) => {
         let question: QuestionData = { id: index + 1, question: "", inWords: "", image_name: "", image_blob: "", answers: [] };
-        question.question = children.children[0].value;
-        question.inWords = children.children[1].value;
+        question.question = children.children[0].children[0].value;
+        question.inWords = children.children[1].children[0].value;
         children.children.forEach((child: any, index: number) => {
             if (child.name === "image") {
                 question.image_name = child.value;
@@ -228,12 +227,10 @@ function getDataFromXML(xml: string): QuestionData[] {
                 question.answers.push(answer);
             }
         });
-
         questions.push(question);
     });
     return questions;
 }
-
 function fileUpload(file: File | null) {
     if (file === null) {
         return;
