@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 
 export default function Question({ data, onDelete, onUpdate }: { data: QuestionData, onDelete: (id: number) => void, onUpdate: (question: QuestionData) => void }) {
@@ -97,6 +97,15 @@ export default function Question({ data, onDelete, onUpdate }: { data: QuestionD
         localStorage.removeItem(nameKey);
     }
 
+    useEffect(() => {
+        // Update the height of the textarea to fit the content
+        const textareas = document.querySelectorAll('textarea');
+        textareas.forEach((textarea) => {
+            textarea.style.height = "auto";
+            textarea.style.height = textarea.scrollHeight + "px";
+        });
+    }, []);
+
     return (
         <div className="question">
             <div className="header">
@@ -110,6 +119,9 @@ export default function Question({ data, onDelete, onUpdate }: { data: QuestionD
                     onChange={(e) => handleInputChange('inWords', e.target.value, e)}
                     placeholder="Question in words"
                     className="in-words"
+                    // scrollHeight is the height of the content of the textarea - the height of the border
+
+                    
                 />
                 {questionData.image_blob === "" ? (
                     <input
