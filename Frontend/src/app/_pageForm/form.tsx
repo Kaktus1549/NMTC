@@ -290,9 +290,33 @@ export default function Form() {
                     <Image src="/icons/plus.svg" alt="Export" width={20} height={20} />
                     <p>Export</p>
                 </button>
-                <button className="reset" onClick={() => setOpen(true)}>
-                    <p>Reset form</p>
+                <div className='uploadReset'>
+                    <button className="reset" onClick={() => setOpen(true)}>
+                        <p>Reset form</p>
+                    </button>
+                <input
+                    type="file"
+                    style={{ display: 'none' }}
+                    id="fileInput"
+                    accept='.xml, .xls'
+                    onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                                const content = event.target?.result;
+                                if (typeof content === 'string') {
+                                    // Handle the file content here
+                                }
+                            };
+                            reader.readAsText(file);
+                        }
+                    }}
+                />
+                <button className="upload" onClick={() => document.getElementById('fileInput')?.click()}>
+                    <p>Upload file</p>
                 </button>
+                </div>
             </footer>
             <FormReset data={questions} open={open} onClose={() => setOpen(false)} />
             <FormDownload exportData={exportData} open={download} onClose={() => setDownload(false)} />

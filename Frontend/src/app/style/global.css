@@ -280,9 +280,24 @@ button:hover{
 .reset{
     background-color: #D93A3A !important;
     border-radius: 25px;
-    flex-basis: 65%; 
+    width: 45%;
     text-align: center;
 }
+
+.upload{
+    background-color: #A2B360 !important;
+    border-radius: 25px;
+    text-align: center;
+    width: 45%;
+}
+
+.uploadReset{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    flex-basis: 65%; 
+}
+
 .spinner {
     width: 70px;
     height: 70px;
