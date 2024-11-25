@@ -185,6 +185,9 @@ button:hover{
 .short{
     flex: 1;
 }
+.short input{
+    height: 25px;
+}
 .long{
     flex: 2;
 }
