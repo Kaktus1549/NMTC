@@ -7,6 +7,7 @@ import FormReset from './formReset';
 import FormDownload from './downloadFile';
 import { encode } from 'html-entities';
 
+
 async function encodeImageToBase64(imageBlob: string): Promise<string | null> {
     try {
         const response = await fetch(imageBlob);
@@ -201,6 +202,85 @@ function deleteFromLocalStorage(id: number) {
         localStorage.removeItem(key);
     });
 }
+
+function getDataFromXML(xml: string): QuestionData[] {
+    var XMLParser = require('react-xml-parser');
+    const xmlData = new XMLParser().parseFromString(xml);
+
+    let questions: QuestionData[] = [];
+    let childrens = xmlData.children;
+    childrens.forEach((children: any, index: number) => {
+        let question: QuestionData = { id: index + 1, question: "", inWords: "", image_name: "", image_blob: "", answers: [] };
+        question.question = children.children[0].value;
+        question.inWords = children.children[1].value;
+        children.children.forEach((child: any, index: number) => {
+            if (child.name === "image") {
+                question.image_name = child.value;
+            }
+            else if (child.name === "image_base64") {
+                question.image_blob = "data:image/*;base64," +  child.value;
+            }
+            else if (child.name === "answer") {
+                let answer: Answer = { id: index, successionRate: "", answer: "", feedback: "" };
+                answer.successionRate = child.attributes.fraction;
+                answer.answer = child.children[0].value;
+                answer.feedback = child.children[1].children[0].value;
+                question.answers.push(answer);
+            }
+        });
+
+        questions.push(question);
+    });
+    return questions;
+}
+
+function fileUpload(file: File | null) {
+    if (file === null) {
+        return;
+    }
+    // Check if the file is an XML file or an XLS file
+    if (file.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
+        alert("XLS support is not implemented yet. Please upload an XML file.");
+    } else if (file.type === "text/xml") {
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            if (event.target) {
+                const xml = event.target.result as string;
+                const questions = getDataFromXML(xml);
+                localStorage.clear();
+                questions.forEach(question => {
+                    localStorage.setItem("question-" + question.id + "-question", question.question);
+                    if (question.inWords !== "") {
+                        localStorage.setItem("question-" + question.id + "-inWords", question.inWords);
+                    }
+                    if (question.image_name !== "") {
+                        localStorage.setItem("question-" + question.id + "-imageName", question.image_name);
+                    }
+                    if (question.image_blob !== "") {
+                        localStorage.setItem("question-" + question.id + "-imageData", question.image_blob);
+                    }
+                    question.answers.forEach(answer => {
+                        if (answer.successionRate !== "") {
+                            localStorage.setItem("question-" + question.id + "-answer-" + answer.id + "-successionRate", String(answer.successionRate));
+                        }
+                        if (answer.answer !== "") {
+                            localStorage.setItem("question-" + question.id + "-answer-" + answer.id + "-answer", answer.answer);
+                        }
+                        if (answer.feedback !== "") {
+                            localStorage.setItem("question-" + question.id + "-answer-" + answer.id + "-feedback", answer.feedback);
+                        }
+                    });
+                });
+                window.location.reload();
+            }
+        };
+        reader.readAsText(file);
+    }
+    else {
+        alert("Invalid file type. Please upload an XML or XLS file.");
+    }
+}
+
 export default function Form() {
     const [questions, setQuestions] = useState<QuestionData[]>([]);
     const [open, setOpen] = useState(false);
@@ -298,18 +378,10 @@ export default function Form() {
                     type="file"
                     style={{ display: 'none' }}
                     id="fileInput"
-                    accept='.xml, .xls'
+                    accept='.xml, .xlsx'
                     onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                            const reader = new FileReader();
-                            reader.onload = (event) => {
-                                const content = event.target?.result;
-                                if (typeof content === 'string') {
-                                    // Handle the file content here
-                                }
-                            };
-                            reader.readAsText(file);
+                        if (e.target.files && e.target.files.length > 0) {
+                            fileUpload(e.target.files[0]);
                         }
                     }}
                 />
