@@ -101,6 +101,9 @@ export default function Question({ data, onDelete, onUpdate }: { data: QuestionD
         // Update the height of the textarea to fit the content
         const textareas = document.querySelectorAll('textarea');
         textareas.forEach((textarea) => {
+            if (textarea.id !== "in-words"){
+                return;
+            }
             textarea.style.height = "auto";
             textarea.style.height = textarea.scrollHeight + "px";
         });
@@ -119,9 +122,7 @@ export default function Question({ data, onDelete, onUpdate }: { data: QuestionD
                     onChange={(e) => handleInputChange('inWords', e.target.value, e)}
                     placeholder="Question in words"
                     className="in-words"
-                    // scrollHeight is the height of the content of the textarea - the height of the border
-
-                    
+                    id="in-words"
                 />
                 {questionData.image_blob === "" ? (
                     <input
