@@ -152,7 +152,13 @@ function getDataFromLocalStorage(): QuestionData[] {
             }
         }
     });
+    // Sort the data by id
     let sortedData = data.sort((a, b) => a.id - b.id);
+    // Sorts the answers by id
+    sortedData.forEach(queston => {
+        queston.answers.sort((a, b) => a.id - b.id); 
+    });
+
     for (let i = 0; i < sortedData.length; i++) {
         if (sortedData[i].id !== i + 1) {
             // If the id is not the expected one, we need to update it even in the localStorage
