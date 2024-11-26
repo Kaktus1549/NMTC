@@ -16,7 +16,8 @@
     "install": "^0.13.0",
     "next": "14.2.4",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "react-xml-parser": "^1.1.8"
   },
   "devDependencies": {
     "@types/mime-types": "^2.1.4",
