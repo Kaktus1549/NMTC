@@ -16,7 +16,7 @@ async function encodeImageToBase64(imageBlob: string): Promise<string | null> {
         if (contentType?.startsWith('image/')) {
             const binaryData = await response.arrayBuffer();
             const uint8Array = new Uint8Array(binaryData);
-            const base64 = btoa(String.fromCharCode(...uint8Array));
+            const base64 = btoa(uint8Array.reduce((data, byte) => data + String.fromCharCode(byte), ''));
             return base64;
         } else {
             console.error("Blob URL does not point to an image");
