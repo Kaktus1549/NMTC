@@ -6,6 +6,7 @@ import Question from './question';
 import FormReset from './formReset';
 import FormDownload from './downloadFile';
 import { encode } from 'html-entities';
+import CsvParser from './csvParser';
 
 
 async function encodeImageToBase64(imageBlob: string): Promise<string | null> {
@@ -242,8 +243,60 @@ function fileUpload(file: File | null) {
         return;
     }
     // Check if the file is an XML file or an XLS file
-    if (file.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
-        alert("XLS support is not implemented yet. Please upload an XML file.");
+    if (file.type === "text/csv") {
+        // Get the content of the file
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            if (event.target) {
+                let data = await CsvParser(event.target.result as string);
+                let questions = [] as QuestionData[];
+                data.forEach((row, index) => {
+                    if(row.length < 3){
+                        return;
+                    }
+                    let question = { id: index + 1, question: "", inWords: "", image_name: "", image_blob: "", answers: [] } as QuestionData;
+                    question.question = row[0];
+                    question.inWords = row[1];
+                    let leng = row.length;
+                    let decrease = 100 / (leng - 2);
+                    let successionRate = 100;
+                    for (let i = 2; i < row.length; i += 1) {
+                        let answer = { id: i - 2, successionRate: "", answer: "", feedback: "" } as Answer;
+                        answer.successionRate = String(successionRate);
+                        successionRate -= decrease;
+                        answer.answer = row[i];
+                        question.answers.push(answer);
+                    }
+                    questions.push(question);
+                    localStorage.clear();
+                    questions.forEach(question => {
+                        localStorage.setItem("question-" + question.id + "-question", question.question);
+                        if (question.inWords !== "") {
+                            localStorage.setItem("question-" + question.id + "-inWords", question.inWords);
+                        }
+                        if (question.image_name !== "") {
+                            localStorage.setItem("question-" + question.id + "-imageName", question.image_name);
+                        }
+                        if (question.image_blob !== "") {
+                            localStorage.setItem("question-" + question.id + "-imageData", question.image_blob);
+                        }
+                        question.answers.forEach(answer => {
+                            if (answer.successionRate !== "") {
+                                localStorage.setItem("question-" + question.id + "-answer-" + answer.id + "-successionRate", String(answer.successionRate));
+                            }
+                            if (answer.answer !== "") {
+                                localStorage.setItem("question-" + question.id + "-answer-" + answer.id + "-answer", answer.answer);
+                            }
+                            if (answer.feedback !== "") {
+                                localStorage.setItem("question-" + question.id + "-answer-" + answer.id + "-feedback", answer.feedback);
+                            }
+                        });
+                    });
+                });
+                window.location.reload();
+            }
+        };
+        reader.readAsText(file);
     } else if (file.type === "text/xml") {
         const reader = new FileReader();
         reader.onload = async (event) => {
@@ -381,7 +434,7 @@ export default function Form() {
                     type="file"
                     style={{ display: 'none' }}
                     id="fileInput"
-                    accept='.xml, .xlsx'
+                    accept='.xml, .csv'
                     onChange={(e) => {
                         if (e.target.files && e.target.files.length > 0) {
                             fileUpload(e.target.files[0]);
