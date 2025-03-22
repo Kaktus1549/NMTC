@@ -143,6 +143,7 @@ button:hover{
     width: 30%;
     min-height: 30px;
     max-width: 95%;
+    min-width: 20%;
 }
 .header .in-words{
     width: 80%;
@@ -172,6 +173,7 @@ button:hover{
     width: 80%;
     min-height: 20px;
     max-width: 95%;
+    min-width: 40%;
 }
 
 .input-box{
