@@ -238,6 +238,33 @@ function getDataFromXML(xml: string): QuestionData[] {
     });
     return questions;
 }
+/**
+ * Uploads a file and processes its content based on the file type (CSV or XML).
+ * 
+ * @param file - The file to be uploaded. It can be either a CSV or XML file.
+ * 
+ * The function performs the following steps:
+ * 1. Checks if the file is null. If it is, the function returns immediately.
+ * 2. If the file is a CSV file:
+ *    - Reads the content of the file using FileReader.
+ *    - Parses the CSV content using CsvParser.
+ *    - Extracts questions and answers from the parsed data.
+ *    - Stores the extracted data in localStorage.
+ *    - Reloads the window.
+ * 3. If the file is an XML file:
+ *    - Reads the content of the file using FileReader.
+ *    - Extracts questions and answers from the XML content using getDataFromXML.
+ *    - Stores the extracted data in localStorage.
+ *    - Reloads the window.
+ * 4. If the file is neither a CSV nor an XML file, an alert is shown indicating an invalid file type.
+ * 
+ * Example CSV Template:
+ * ```
+ * Question,InWords,ImageName,ImageBlob,SuccessionRate1,Answer1,Feedback1,SuccessionRate2,Answer2,Feedback2
+ * "What is the capital of France?","Paris","image1.png","<base64-encoded-image>","100","Paris","Correct!","0","London","Incorrect."
+ * "What is 2+2?","Four","image2.png","<base64-encoded-image>","100","4","Correct!","0","3","Incorrect."
+ * ```
+ */
 function fileUpload(file: File | null) {
     if (file === null) {
         return;
@@ -257,14 +284,13 @@ function fileUpload(file: File | null) {
                     let question = { id: index + 1, question: "", inWords: "", image_name: "", image_blob: "", answers: [] } as QuestionData;
                     question.question = row[0];
                     question.inWords = row[1];
-                    let leng = row.length;
-                    let decrease = 100 / (leng - 2);
-                    let successionRate = 100;
-                    for (let i = 2; i < row.length; i += 1) {
+                    question.image_name = row[2];
+                    question.image_blob = row[3];
+                    for (let i = 4; i < row.length; i += 3) {
                         let answer = { id: i - 2, successionRate: "", answer: "", feedback: "" } as Answer;
-                        answer.successionRate = String(successionRate);
-                        successionRate -= decrease;
-                        answer.answer = row[i];
+                        answer.successionRate = row[i];
+                        answer.answer = row[i + 1];
+                        answer.feedback = row[i + 2];
                         question.answers.push(answer);
                     }
                     questions.push(question);
