@@ -69,17 +69,23 @@ async function generateXML(data: QuestionData[]) {
     let xml = `<?xml version="1.0"?>\n<quiz>\n${xmlQuestions.join('')}\n</quiz>`;
     return xml;
 }
-function base64ToBlob(base64Data: string): Blob {
-    const byteString = atob(base64Data.split(',')[1]);
-    const mimeString = base64Data.split(',')[0].split(':')[1].split(';')[0];
-    
-    const ab = new ArrayBuffer(byteString.length);
-    const ia = new Uint8Array(ab);
-    for (let i = 0; i < byteString.length; i++) {
-        ia[i] = byteString.charCodeAt(i);
-    }
+function base64ToBlob(base64Data: string): Blob | undefined {
+    try{
+        const byteString = atob(base64Data.split(',')[1]);
+        const mimeString = base64Data.split(',')[0].split(':')[1].split(';')[0];
+        
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+        for (let i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+        }
 
-    return new Blob([ab], { type: mimeString });
+        return new Blob([ab], { type: mimeString });
+    }
+    catch (error) {
+        console.error('Error:', error);
+        return;
+    }
 }
 function getDataFromLocalStorage(): QuestionData[] {
     let keys = Object.keys(localStorage);
@@ -114,9 +120,14 @@ function getDataFromLocalStorage(): QuestionData[] {
                     break;
                 case "imageData":
                     const blob = base64ToBlob(value || "");
-                    const blobUrl = URL.createObjectURL(blob);
+                    if (blob){
+                        const blobUrl = URL.createObjectURL(blob);
 
-                    question.image_blob = blobUrl;
+                        question.image_blob = blobUrl;
+                    }
+                    else{
+                        question.image_blob = "";
+                    }
                     break;
             }
         } else if (keyParts.length === 5) {
@@ -278,6 +289,10 @@ function fileUpload(file: File | null) {
                 let data = await CsvParser(event.target.result as string);
                 let questions = [] as QuestionData[];
                 data.forEach((row, index) => {
+                    // Skip the first row (header)
+                    if (index === 0) {
+                        return;
+                    }
                     if(row.length < 3){
                         return;
                     }
