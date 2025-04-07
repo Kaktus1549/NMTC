@@ -6,7 +6,7 @@ import Question from './question';
 import FormReset from './formReset';
 import FormDownload from './downloadFile';
 import { encode } from 'html-entities';
-import CsvParser from './csvParser';
+import {CsvParser, JsonToCSV} from './csvParser';
 
 
 async function encodeImageToBase64(imageBlob: string): Promise<string | null> {
@@ -377,6 +377,53 @@ function fileUpload(file: File | null) {
         alert("Invalid file type. Please upload an XML or XLS file.");
     }
 }
+async function generateCSV(data: QuestionData[]) : Promise<string> {
+    let CSVdata = [] as any[];
+    let localData = getDataFromLocalStorage();
+    // Get the question with most answers
+    let maxAnswers = 0;
+    localData.forEach(question => {
+        if (question.answers.length > maxAnswers) {
+            maxAnswers = question.answers.length;
+        }
+    }
+    );
+    // Generate header
+    let header = ["Question", "InWords", "ImageName", "ImageBlob"];
+    for (let i = 0; i < maxAnswers; i++) {
+        header.push("SuccessionRate" + (i + 1), "Answer" + (i + 1), "Feedback" + (i + 1));
+    }
+    console.log(header);
+    console.log(localData); 
+    localData.forEach((question, index) => {
+        CSVdata[index] = {
+            Question: question.question,
+            InWords: question.inWords,
+            ImageName: question.image_name,
+            ImageBlob: question.image_blob,
+        };
+        question.answers.forEach((answer, answerIndex) => {
+            CSVdata[index][`SuccessionRate${answerIndex + 1}`] = answer.successionRate || 0;
+            CSVdata[index][`Answer${answerIndex + 1}`] = answer.answer || "";
+            CSVdata[index][`Feedback${answerIndex + 1}`] = answer.feedback || "";
+        })
+        if (index === 0){
+            // Add empty answers until number of answers is == to maxAnswers
+            let counter = question.answers.length
+            while (counter < maxAnswers){
+                CSVdata[index][`SuccessionRate${counter + 1}`] = 0;
+                CSVdata[index][`Answer${counter + 1}`] = "";
+                CSVdata[index][`Feedback${counter + 1}`] = "";
+                counter++;
+            }
+        }
+    })
+
+    return JsonToCSV(CSVdata).then((csv) => {
+        return csv;
+    });
+}
+
 
 export default function Form() {
     const [questions, setQuestions] = useState<QuestionData[]>([]);
@@ -426,18 +473,33 @@ export default function Form() {
         );
     };
 
-    const exportData = async (fileName: string) => {
-        await generateXML(questions).then(xml => {
-            const blob = new Blob([xml], { type: "application/xml" });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = fileName + ".xml";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-        });
+    const exportData = async (fileName: string, csv: boolean = false) => {
+        if (!csv){
+            await generateXML(questions).then(xml => {
+                const blob = new Blob([xml], { type: "application/xml" });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = fileName + ".xml";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            });
+        }
+        else{
+            await generateCSV(questions).then(csv => {
+                const blob = new Blob([csv], { type: "text/csv" });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = fileName + ".csv";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            });
+        }
     };
 
     return (

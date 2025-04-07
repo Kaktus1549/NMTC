@@ -3,7 +3,7 @@
 import { usePapaParse } from 'react-papaparse';
 
 
-export default function CsvParser(csvText: string): Promise<string[][]> {
+export function CsvParser(csvText: string): Promise<string[][]> {
     const { readString } = usePapaParse();
     return new Promise((resolve, reject) => {
         readString(csvText, {
@@ -17,3 +17,15 @@ export default function CsvParser(csvText: string): Promise<string[][]> {
         });
     });
 };
+
+export function JsonToCSV(json: any[]): Promise<string>{
+    const { jsonToCSV } = usePapaParse();
+    return new Promise((resolve, reject) => {
+        try {
+            const csv = jsonToCSV(json);
+            resolve(csv);
+        } catch (error) {
+            reject(error);
+        }
+    });
+}

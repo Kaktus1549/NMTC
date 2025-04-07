@@ -18,10 +18,10 @@ const Transition = React.forwardRef(function Transition(
 });
 
 
-export default function FormDownload({exportData, open, onClose }: {exportData: (fileName: string) => void, open: boolean, onClose: () => void }) {
+export default function FormDownload({exportData, open, onClose }: {exportData: (fileName: string, csv: boolean) => void, open: boolean, onClose: () => void }) {
     function Download(event: React.MouseEvent<HTMLButtonElement>){
         const fileName = (document.getElementById('fileName') as HTMLInputElement).value ?? 'Quiz';
-        exportData(fileName);
+        exportData(fileName, true);
         onClose();
     }
     return (
@@ -47,7 +47,22 @@ export default function FormDownload({exportData, open, onClose }: {exportData: 
             <div className='formDownload'>
                 <p>Enter the name of the file you want to download:</p>
                 <input type="text" id="fileName" name="fileName" placeholder='Quiz'/>
-            </div>
+                <div className="checkbox-container" style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  marginTop: '15px',
+                }}>
+                  <input type="checkbox" id="csv" name="csv" value="csv" style={{
+                  marginRight: '10px',
+                  width: '18px',
+                  height: '18px',
+                  }} />
+                  <label htmlFor="csv" className="checkbox-label" style={{
+                  fontSize: '16px',
+                  color: '#333',
+                  }}>CSV</label>
+                </div>
+              </div>
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{
