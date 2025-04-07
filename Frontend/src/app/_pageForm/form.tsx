@@ -4,7 +4,10 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Question from './question';
 import FormReset from './formReset';
+import FormDownload from './downloadFile';
 import { encode } from 'html-entities';
+import CsvParser from './csvParser';
+
 
 async function encodeImageToBase64(imageBlob: string): Promise<string | null> {
     try {
@@ -14,7 +17,7 @@ async function encodeImageToBase64(imageBlob: string): Promise<string | null> {
         if (contentType?.startsWith('image/')) {
             const binaryData = await response.arrayBuffer();
             const uint8Array = new Uint8Array(binaryData);
-            const base64 = btoa(String.fromCharCode(...uint8Array));
+            const base64 = btoa(uint8Array.reduce((data, byte) => data + String.fromCharCode(byte), ''));
             return base64;
         } else {
             console.error("Blob URL does not point to an image");
@@ -66,17 +69,23 @@ async function generateXML(data: QuestionData[]) {
     let xml = `<?xml version="1.0"?>\n<quiz>\n${xmlQuestions.join('')}\n</quiz>`;
     return xml;
 }
-function base64ToBlob(base64Data: string): Blob {
-    const byteString = atob(base64Data.split(',')[1]);
-    const mimeString = base64Data.split(',')[0].split(':')[1].split(';')[0];
-    
-    const ab = new ArrayBuffer(byteString.length);
-    const ia = new Uint8Array(ab);
-    for (let i = 0; i < byteString.length; i++) {
-        ia[i] = byteString.charCodeAt(i);
-    }
+function base64ToBlob(base64Data: string): Blob | undefined {
+    try{
+        const byteString = atob(base64Data.split(',')[1]);
+        const mimeString = base64Data.split(',')[0].split(':')[1].split(';')[0];
+        
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+        for (let i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+        }
 
-    return new Blob([ab], { type: mimeString });
+        return new Blob([ab], { type: mimeString });
+    }
+    catch (error) {
+        console.error('Error:', error);
+        return;
+    }
 }
 function getDataFromLocalStorage(): QuestionData[] {
     let keys = Object.keys(localStorage);
@@ -111,9 +120,14 @@ function getDataFromLocalStorage(): QuestionData[] {
                     break;
                 case "imageData":
                     const blob = base64ToBlob(value || "");
-                    const blobUrl = URL.createObjectURL(blob);
+                    if (blob){
+                        const blobUrl = URL.createObjectURL(blob);
 
-                    question.image_blob = blobUrl;
+                        question.image_blob = blobUrl;
+                    }
+                    else{
+                        question.image_blob = "";
+                    }
                     break;
             }
         } else if (keyParts.length === 5) {
@@ -150,7 +164,13 @@ function getDataFromLocalStorage(): QuestionData[] {
             }
         }
     });
+    // Sort the data by id
     let sortedData = data.sort((a, b) => a.id - b.id);
+    // Sorts the answers by id
+    sortedData.forEach(queston => {
+        queston.answers.sort((a, b) => a.id - b.id); 
+    });
+
     for (let i = 0; i < sortedData.length; i++) {
         if (sortedData[i].id !== i + 1) {
             // If the id is not the expected one, we need to update it even in the localStorage
@@ -200,10 +220,169 @@ function deleteFromLocalStorage(id: number) {
         localStorage.removeItem(key);
     });
 }
+function getDataFromXML(xml: string): QuestionData[] {
+    var XMLParser = require('react-xml-parser');
+    const xmlData = new XMLParser().parseFromString(xml);
+
+    let questions: QuestionData[] = [];
+    let childrens = xmlData.children;
+    childrens.forEach((children: any, index: number) => {
+        let question: QuestionData = { id: index + 1, question: "", inWords: "", image_name: "", image_blob: "", answers: [] };
+        question.question = children.children[0].children[0].value;
+        question.inWords = children.children[1].children[0].value;
+        children.children.forEach((child: any, index: number) => {
+            if (child.name === "image") {
+                question.image_name = child.value;
+            }
+            else if (child.name === "image_base64") {
+                question.image_blob = "data:image/*;base64," +  child.value;
+            }
+            else if (child.name === "answer") {
+                let answer: Answer = { id: index, successionRate: "", answer: "", feedback: "" };
+                answer.successionRate = child.attributes.fraction;
+                answer.answer = child.children[0].value;
+                answer.feedback = child.children[1].children[0].value;
+                question.answers.push(answer);
+            }
+        });
+        questions.push(question);
+    });
+    return questions;
+}
+/**
+ * Uploads a file and processes its content based on the file type (CSV or XML).
+ * 
+ * @param file - The file to be uploaded. It can be either a CSV or XML file.
+ * 
+ * The function performs the following steps:
+ * 1. Checks if the file is null. If it is, the function returns immediately.
+ * 2. If the file is a CSV file:
+ *    - Reads the content of the file using FileReader.
+ *    - Parses the CSV content using CsvParser.
+ *    - Extracts questions and answers from the parsed data.
+ *    - Stores the extracted data in localStorage.
+ *    - Reloads the window.
+ * 3. If the file is an XML file:
+ *    - Reads the content of the file using FileReader.
+ *    - Extracts questions and answers from the XML content using getDataFromXML.
+ *    - Stores the extracted data in localStorage.
+ *    - Reloads the window.
+ * 4. If the file is neither a CSV nor an XML file, an alert is shown indicating an invalid file type.
+ * 
+ * Example CSV Template:
+ * ```
+ * Question,InWords,ImageName,ImageBlob,SuccessionRate1,Answer1,Feedback1,SuccessionRate2,Answer2,Feedback2
+ * "What is the capital of France?","Paris","image1.png","<base64-encoded-image>","100","Paris","Correct!","0","London","Incorrect."
+ * "What is 2+2?","Four","image2.png","<base64-encoded-image>","100","4","Correct!","0","3","Incorrect."
+ * ```
+ */
+function fileUpload(file: File | null) {
+    if (file === null) {
+        return;
+    }
+    // Check if the file is an XML file or an XLS file
+    if (file.type === "text/csv") {
+        // Get the content of the file
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            if (event.target) {
+                let data = await CsvParser(event.target.result as string);
+                let questions = [] as QuestionData[];
+                data.forEach((row, index) => {
+                    // Skip the first row (header)
+                    if (index === 0) {
+                        return;
+                    }
+                    if(row.length < 3){
+                        return;
+                    }
+                    let question = { id: index + 1, question: "", inWords: "", image_name: "", image_blob: "", answers: [] } as QuestionData;
+                    question.question = row[0];
+                    question.inWords = row[1];
+                    question.image_name = row[2];
+                    question.image_blob = row[3];
+                    for (let i = 4; i < row.length; i += 3) {
+                        let answer = { id: i - 2, successionRate: "", answer: "", feedback: "" } as Answer;
+                        answer.successionRate = row[i];
+                        answer.answer = row[i + 1];
+                        answer.feedback = row[i + 2];
+                        question.answers.push(answer);
+                    }
+                    questions.push(question);
+                    localStorage.clear();
+                    questions.forEach(question => {
+                        localStorage.setItem("question-" + question.id + "-question", question.question);
+                        if (question.inWords !== "") {
+                            localStorage.setItem("question-" + question.id + "-inWords", question.inWords);
+                        }
+                        if (question.image_name !== "") {
+                            localStorage.setItem("question-" + question.id + "-imageName", question.image_name);
+                        }
+                        if (question.image_blob !== "") {
+                            localStorage.setItem("question-" + question.id + "-imageData", question.image_blob);
+                        }
+                        question.answers.forEach(answer => {
+                            if (answer.successionRate !== "") {
+                                localStorage.setItem("question-" + question.id + "-answer-" + answer.id + "-successionRate", String(answer.successionRate));
+                            }
+                            if (answer.answer !== "") {
+                                localStorage.setItem("question-" + question.id + "-answer-" + answer.id + "-answer", answer.answer);
+                            }
+                            if (answer.feedback !== "") {
+                                localStorage.setItem("question-" + question.id + "-answer-" + answer.id + "-feedback", answer.feedback);
+                            }
+                        });
+                    });
+                });
+                window.location.reload();
+            }
+        };
+        reader.readAsText(file);
+    } else if (file.type === "text/xml") {
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            if (event.target) {
+                const xml = event.target.result as string;
+                const questions = getDataFromXML(xml);
+                localStorage.clear();
+                questions.forEach(question => {
+                    localStorage.setItem("question-" + question.id + "-question", question.question);
+                    if (question.inWords !== "") {
+                        localStorage.setItem("question-" + question.id + "-inWords", question.inWords);
+                    }
+                    if (question.image_name !== "") {
+                        localStorage.setItem("question-" + question.id + "-imageName", question.image_name);
+                    }
+                    if (question.image_blob !== "") {
+                        localStorage.setItem("question-" + question.id + "-imageData", question.image_blob);
+                    }
+                    question.answers.forEach(answer => {
+                        if (answer.successionRate !== "") {
+                            localStorage.setItem("question-" + question.id + "-answer-" + answer.id + "-successionRate", String(answer.successionRate));
+                        }
+                        if (answer.answer !== "") {
+                            localStorage.setItem("question-" + question.id + "-answer-" + answer.id + "-answer", answer.answer);
+                        }
+                        if (answer.feedback !== "") {
+                            localStorage.setItem("question-" + question.id + "-answer-" + answer.id + "-feedback", answer.feedback);
+                        }
+                    });
+                });
+                window.location.reload();
+            }
+        };
+        reader.readAsText(file);
+    }
+    else {
+        alert("Invalid file type. Please upload an XML or XLS file.");
+    }
+}
+
 export default function Form() {
     const [questions, setQuestions] = useState<QuestionData[]>([]);
     const [open, setOpen] = useState(false);
     const [loadingText, setLoadingText] = useState("Loading");
+    const [download, setDownload] = useState(false);
 
     useEffect(() => {
         if (typeof localStorage !== "undefined") {
@@ -247,14 +426,17 @@ export default function Form() {
         );
     };
 
-    const exportData = async () => {
+    const exportData = async (fileName: string) => {
         await generateXML(questions).then(xml => {
             const blob = new Blob([xml], { type: "application/xml" });
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
-            link.download = "quiz.xml";
             link.href = url;
+            link.download = fileName + ".xml";
+            document.body.appendChild(link);
             link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         });
     };
 
@@ -281,15 +463,32 @@ export default function Form() {
                     <Image src="/icons/plus.svg" alt="Add question" width={20} height={20} />
                     <p>Add question</p>
                 </button>
-                <button onClick={exportData}>
+                <button onClick={() => setDownload(true)}>
                     <Image src="/icons/plus.svg" alt="Export" width={20} height={20} />
                     <p>Export</p>
                 </button>
-                <button className="reset" onClick={() => setOpen(true)}>
-                    <p>Reset form</p>
+                <div className='uploadReset'>
+                    <button className="reset" onClick={() => setOpen(true)}>
+                        <p>Reset form</p>
+                    </button>
+                <input
+                    type="file"
+                    style={{ display: 'none' }}
+                    id="fileInput"
+                    accept='.xml, .csv'
+                    onChange={(e) => {
+                        if (e.target.files && e.target.files.length > 0) {
+                            fileUpload(e.target.files[0]);
+                        }
+                    }}
+                />
+                <button className="upload" onClick={() => document.getElementById('fileInput')?.click()}>
+                    <p>Upload file</p>
                 </button>
+                </div>
             </footer>
             <FormReset data={questions} open={open} onClose={() => setOpen(false)} />
+            <FormDownload exportData={exportData} open={download} onClose={() => setDownload(false)} />
         </div>
     );
 }

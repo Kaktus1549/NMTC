@@ -137,11 +137,13 @@ button:hover{
     animation: appear 0.2s ease-in-out;
     animation-fill-mode: forwards;
 }
-.header input{
+.header input, .header textarea{
     border: 1.5px solid #000;
     background: #FFF;
     width: 30%;
-    height: 30px;
+    min-height: 30px;
+    max-width: 95%;
+    min-width: 20%;
 }
 .header .in-words{
     width: 80%;
@@ -165,12 +167,15 @@ button:hover{
     width: 100%;
     gap: 5px;
 }
-.answer input{
+.answer textarea, .answer input{
     border: 2px solid #000;
     background: #FFF;
     width: 80%;
-    height: 20px;
+    min-height: 20px;
+    max-width: 95%;
+    min-width: 40%;
 }
+
 .input-box{
     display: flex;
     flex-direction: column;
@@ -183,6 +188,9 @@ button:hover{
 }
 .short{
     flex: 1;
+}
+.short input{
+    height: 25px;
 }
 .long{
     flex: 2;
@@ -279,9 +287,24 @@ button:hover{
 .reset{
     background-color: #D93A3A !important;
     border-radius: 25px;
-    flex-basis: 65%; 
+    width: 45%;
     text-align: center;
 }
+
+.upload{
+    background-color: #A2B360 !important;
+    border-radius: 25px;
+    text-align: center;
+    width: 45%;
+}
+
+.uploadReset{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    flex-basis: 65%; 
+}
+
 .spinner {
     width: 70px;
     height: 70px;
@@ -295,6 +318,22 @@ button:hover{
     color: #000;
     font-size: 1.2rem;
     margin-bottom: 10%;
+}
+
+.formDownload{
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.formDownload input{
+    border: 1.5px solid #000;
+    background: #FFF;
+    width: 80%;
+    height: 30px;
+    font-size: 1.2rem;
 }
 
 @keyframes spin-anim {
