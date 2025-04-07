@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 
 export default function Question({ data, onDelete, onUpdate }: { data: QuestionData, onDelete: (id: number) => void, onUpdate: (question: QuestionData) => void }) {
     const [questionData, setQuestionData] = useState(data);
 
-    const handleInputChange = (field : string, value : string) => {
+    const handleInputChange = (field : string, value : string, event?: React.ChangeEvent<HTMLTextAreaElement> | React.ChangeEvent<HTMLInputElement>) => {
         const updatedQuestion = { ...questionData, [field]: value };
         setQuestionData(updatedQuestion);
         onUpdate(updatedQuestion);
@@ -15,6 +15,10 @@ export default function Question({ data, onDelete, onUpdate }: { data: QuestionD
         else{
             let key = `question-${data.id}-${field}`;
             localStorage.removeItem(key);
+        }
+        if (event) {
+            event.target.style.height = "auto";
+            event.target.style.height = event.target.scrollHeight + "px";
         }
     };
 
@@ -93,21 +97,32 @@ export default function Question({ data, onDelete, onUpdate }: { data: QuestionD
         localStorage.removeItem(nameKey);
     }
 
+    useEffect(() => {
+        // Update the height of the textarea to fit the content
+        const textareas = document.querySelectorAll('textarea');
+        textareas.forEach((textarea) => {
+            if (textarea.id !== "in-words"){
+                return;
+            }
+            textarea.style.height = "auto";
+            textarea.style.height = textarea.scrollHeight + "px";
+        });
+    }, []);
+
     return (
         <div className="question">
             <div className="header">
-                <input
-                    type="text"
+                <textarea
                     value={questionData.question}
                     onChange={(e) => handleInputChange('question', e.target.value)}
                     placeholder={`Question #${data.id}`}
                 />
-                <input
-                    type="text"
+                <textarea
                     value={questionData.inWords}
-                    onChange={(e) => handleInputChange('inWords', e.target.value)}
+                    onChange={(e) => handleInputChange('inWords', e.target.value, e)}
                     placeholder="Question in words"
                     className="in-words"
+                    id="in-words"
                 />
                 {questionData.image_blob === "" ? (
                     <input
@@ -147,16 +162,14 @@ export default function Question({ data, onDelete, onUpdate }: { data: QuestionD
                             />
                         </div>
                         <div className="input-box short">
-                            <input
-                                type="text"
+                            <textarea
                                 value={answer.answer}
                                 onChange={(e) => handleAnswerChange(index, 'answer', e.target.value)}
                                 placeholder="Answer"
                             />
                         </div>
                         <div className="input-box long">
-                            <input
-                                type="text"
+                            <textarea
                                 value={answer.feedback}
                                 onChange={(e) => handleAnswerChange(index, 'feedback', e.target.value)}
                                 placeholder="Feedback"
